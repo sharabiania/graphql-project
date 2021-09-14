@@ -1,0 +1,13 @@
+ type Query {    
+    forums: [Forum],
+    userForums(userId: ID!): [Forum]
+  }
+
+  type Mutation {
+    forum(name: String!): String
+  }
+
+  type Forum {
+    id: ID!,
+    name: String
+  }

@@ -1,7 +1,8 @@
 import express from 'express';
 import { ApolloServer, gql } from 'apollo-server-express';
+import { v4 as uuidv4 } from 'uuid';
 
-const fakeForums = [
+const fakeForums: Forum[] = [
   {id: 'f1', name: 'forum1'}, 
   {id: 'f2', name: 'forum2'},
   {id: 'f3', name: 'forum3'},
@@ -21,10 +22,19 @@ const fakeUsers = [
   }
 ];
 
+interface Forum {
+  id: string,
+  name: string
+}
+
 const typeDefs = gql`
   type Query {    
     forums: [Forum],
     userForums(userId: ID!): [Forum]
+  },
+
+  type Mutation {
+    forum(name: String!): String
   },
 
   type Forum {
@@ -36,12 +46,23 @@ const typeDefs = gql`
 const resolvers = {
   Query: {    
     forums: () => fakeForums,
-    userForums: (_: any, args: any): any => {      
+    userForums: (_: any, args: any): Forum[] => {      
       const userForumIds = fakeUsers.find(x => x.id === args.userId)?.forums;      
       if(!userForumIds) return [];
       return fakeForums.filter(x => userForumIds.includes(x.id));
     }
   },
+  Mutation: {
+    forum: (_:any, args: any): Forum => {
+      const newForum: Forum = {
+        id: uuidv4(),
+        name: args.name
+      }
+      fakeForums.push(newForum);
+
+      return newForum;
+    }
+  }
 };
 
 const server = new ApolloServer({ typeDefs, resolvers });
